@@ -8,7 +8,7 @@ CREATE_TABLE_TASKS = """
         id INTEGER PRIMARY KEY AUTOINCREMENT,
  
 
-        task TEXT NOT NULL,
+        task TEXT NOT NULL
  
 
         )

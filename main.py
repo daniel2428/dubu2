@@ -5,7 +5,7 @@ import flet as ft
 from db import main_db
  
 
-
+from datetime import datetime
  
 
 
@@ -14,13 +14,13 @@ from db import main_db
 def main(page: ft.Page):
  
 
-    page.title = 'Todo List'
+    page.title = 'Task Manager'
  
 
-    page.padding = 40 
+    page.padding = 75
  
 
-    page.bgcolor = ft.colors.GREY_600
+    page.bgcolor = ft.Colors.DEEP_ORANGE_ACCENT
  
 
     page.theme_mode = ft.ThemeMode.DARK
@@ -35,19 +35,16 @@ def main(page: ft.Page):
 
  
 
-
- 
-
     def load_tasks():
  
 
         task_list.controls.clear()
  
 
-        for task_id, task_text in main_db.get_tasks():
+        for task_id, task_text, created_at in main_db.get_tasks():
  
 
-            task_list.controls.append(create_task_row(task_id, task_text))
+            task_list.controls.append(create_task_row(task_id, task_text, created_at))
  
 
         page.update()
@@ -56,10 +53,16 @@ def main(page: ft.Page):
 
  
 
-    def create_task_row(task_id, task_text):
+    def create_task_row(task_id, task_text, created_at):
  
 
         task_field = ft.TextField(value=task_text, expand=True, dense=True, read_only=True)
+ 
+
+        timestamp = ft.Text(created_at, color=ft.Colors.BLACK, size=12)
+ 
+
+
  
 
 
@@ -95,19 +98,28 @@ def main(page: ft.Page):
         return ft.Row([
  
 
-            task_field,
+            task_field, 
  
 
-            ft.IconButton(ft.icons.EDIT, icon_color=ft.colors.YELLOW_400, on_click=enable_edit),
+            timestamp,
  
 
-            ft.IconButton(ft.icons.SAVE, icon_color=ft.colors.GREEN_400, on_click=save_edit)
+            ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED_500, on_click=lambda e: delete_task(task_id)),
+ 
+
+            ft.IconButton(ft.Icons.EDIT, icon_color=ft.Colors.YELLOW_300, on_click=enable_edit),
+ 
+
+            ft.IconButton(ft.Icons.SAVE, icon_color=ft.Colors.GREEN_500, on_click=save_edit)
  
 
         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
  
 
-    
+        
+ 
+
+
  
 
     def add_task(e):
@@ -119,10 +131,13 @@ def main(page: ft.Page):
             task_id = main_db.add_task_db(task_input.value)
  
 
-            task_list.controls.append(create_task_row(task_id, task_input.value))
+            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
  
 
-            task_input.value = ""
+            task_list.controls.append(create_task_row(task_id, task_input.value, created_at))
+ 
+
+            task_input.value = ''
  
 
             page.update()
@@ -131,10 +146,31 @@ def main(page: ft.Page):
 
  
 
-    task_input = ft.TextField(hint_text='Добавьте задачу', expand=True, dense=True, on_submit=add_task)
+
  
 
-    add_button = ft.ElevatedButton("Добавить", on_click=add_task, icon=ft.icons.ADD)
+    def delete_task(task_id):
+ 
+
+        main_db.delete_task_db(task_id)
+ 
+
+        load_tasks()
+ 
+
+        
+ 
+
+
+ 
+
+
+ 
+
+    task_input = ft.TextField(label='Add your task', dense=True, expand=True, on_submit=add_task)
+ 
+
+    add_button = ft.ElevatedButton('Add', on_click=add_task, icon=ft.icons.ADD)
  
 
 
@@ -162,9 +198,6 @@ def main(page: ft.Page):
  
 
     load_tasks()
- 
-
-
  
 
 
